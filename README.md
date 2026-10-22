@@ -9,7 +9,7 @@ calx lets a numerical computation be written once and run on the CPU today, and 
 - **a computation stack.** It keeps six things separate: representation, schedule, compiler, runtime, task scheduler and device backends. The design follows TVM, Halide and MLIR.
 - **general numerical methods**, built on that stack. These cover floating-point number systems, linear algebra, transforms, quadrature, integrators and solvers.
 
-calx knows nothing about any scientific domain. It is one of three libraries developed for the [Integrative Astronomy, Geography, Oceanography Laboratory](https://github.com/huangwanhong-maker/Integrative_Astronomy_Geography_Oceanography_Laboratory), but it stands on its own.
+calx knows nothing about any scientific domain. It is one of the foundation libraries of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures), but it stands on its own.
 
 ## 2. Design Principles
 

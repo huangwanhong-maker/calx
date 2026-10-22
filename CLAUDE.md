@@ -2,7 +2,7 @@
 
 This file guides Claude Code in the calx repository.
 
-calx is one of three libraries developed for the [Integrative Astronomy, Geography, Oceanography Laboratory](https://github.com/huangwanhong-maker/Integrative_Astronomy_Geography_Oceanography_Laboratory), where it is included as the git submodule `lib/calx`. It is nevertheless a project in its own right, and must make sense without the laboratory.
+calx is one of the foundation libraries of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures), where it is included as the git submodule `foundations/calx`. It is nevertheless a project in its own right, and must make sense without the infrastructure.
 
 ## 1. Purpose and Scope
 
@@ -24,7 +24,7 @@ The following are out of scope, with where each belongs instead:
 | Exact arithmetic and algebraic, topological or categorical structures | morphe |
 | Geometry, units and physical laws | physis |
 | Discretisations that rely on such structure, e.g. discrete exterior calculus, Lie-group integrators | physis |
-| Anything about particular bodies, datasets or observations | the laboratory |
+| Anything about particular bodies, datasets or observations | the domains of The Science Infrastructures |
 
 ## 2. Invariants
 
@@ -95,20 +95,20 @@ Each module has:
 
 ### 5.5 Shared Conventions
 
-calx, morphe, physis and the laboratory keep these conventions identical:
+calx, morphe, physis and the infrastructure keep these conventions identical:
 
 - the writing style;
 - the status vocabulary;
 - the decision-log and idea conventions.
 
-When one of them changes, change it in every repository of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures) together: the three libraries, the laboratories and the umbrella.
+When one of them changes, change it in every repository of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures) together: the foundation libraries and the infrastructure's repository.
 
-### 5.6 Work Inside the Laboratory
+### 5.6 Work Inside the Infrastructure
 
-When calx is edited inside the laboratory's `lib/calx`:
+When calx is edited inside the infrastructure's `foundations/calx`:
 
 1. commit in calx first;
-2. then commit the updated submodule pointer in the laboratory.
+2. then commit the updated submodule pointer in the infrastructure.
 
 ## 6. Conventions
 
@@ -127,7 +127,7 @@ When calx is edited inside the laboratory's `lib/calx`:
 
 ## 7. Technology
 
-- **Language: C++.** This was decided in the laboratory's ADR 0003 and adopted in decision 0002 here.
+- **Language: C++.** This was decided in ADR 0003 of The Science Infrastructures and adopted in decision 0002 here.
 - **Provisional choices:**
   - C++20;
   - CMake;
@@ -145,10 +145,10 @@ When calx is edited inside the laboratory's `lib/calx`:
 1. **Automatic differentiation.** Its natural home is a transformation on the IR, as Enzyme does on LLVM IR. Decide when to build it.
 2. **Relation to MLIR.** Is the low-level IR an MLIR dialect, or does it lower to one?
 3. **Native CPU path.** Should it emit C++, LLVM IR or something else?
-4. **Typed annotations in the IR.** A generic mechanism through which physis can attach units and frames to IR types ([laboratory idea](https://github.com/huangwanhong-maker/Integrative_Astronomy_Geography_Oceanography_Laboratory/blob/main/development/ideas/2026-10-21-units-and-frames-as-types.md)).
+4. **Typed annotations in the IR.** A generic mechanism through which physis can attach units and frames to IR types ([idea of the infrastructure](https://github.com/huangwanhong-maker/The-Science-Infrastructures/blob/main/development/ideas/2026-10-21-units-and-frames-as-types.md)).
 5. **Rewriting in the compiler.** Should calx have its own engine, or use morphe's? See the [idea](development/ideas/2026-10-21-equality-saturation-in-the-compiler.md).
 6. **Precision policy details.**
-7. **Toolchain and build.** This decision is shared with the laboratory.
+7. **Toolchain and build.** This decision is shared with the infrastructure.
 
 ## 9. Current State
 
