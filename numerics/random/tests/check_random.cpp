@@ -4,9 +4,11 @@
 // below 1e-6, and the seeds are fixed, so the checks are deterministic.
 
 #include <calx/random/philox.hpp>
+#include <calx/random/poisson.hpp>
 #include <calx/random/stream.hpp>
 #include <calx/verification/check.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <string>
@@ -14,6 +16,7 @@
 
 using calx::random::Philox4x32;
 using calx::random::Stream;
+using calx::random::PoissonTable;
 
 namespace {
 
@@ -125,6 +128,41 @@ int main() {
     const std::string name = "random: Poisson (mean " + calx::verification::shortest(lam) + ")";
     s.check(name + ", z of the mean", (m.mean - lam) / std::sqrt(lam / N), 5);
     s.check(name + ", z of the variance", (m.variance() - lam) / std::sqrt((lam + 2 * lam * lam) / N), 5);
+  }
+  // ---- Poisson by a tabulated distribution function: its frequencies against the probabilities ----
+  for (double lam : {0.2, 2.0, 7.5, 40.0}) {
+    const PoissonTable table(lam);
+    Stream r(2026, 15, static_cast<std::uint32_t>(lam * 10), 0);
+    const int n = 1000000;
+    std::vector<double> count(static_cast<std::size_t>(lam + 12 * std::sqrt(lam) + 15), 0.0);
+    Moments m;
+    for (int i = 0; i < n; i++) {
+      const auto k = table(r);
+      m.add(static_cast<double>(k));
+      count[std::min<std::size_t>(static_cast<std::size_t>(k), count.size() - 1)] += 1;
+    }
+    // Pearson's chi-square over the cells expecting at least 5 draws, the rest pooled.
+    double chi2 = 0, p = std::exp(-lam), pooled_p = 0, pooled_c = 0;
+    int cells = 0;
+    for (std::size_t k = 0; k < count.size(); k++) {
+      if (k > 0) p *= lam / static_cast<double>(k);
+      const double e = n * p;
+      if (e >= 5) { chi2 += (count[k] - e) * (count[k] - e) / e; cells++; }
+      else { pooled_p += p; pooled_c += count[k]; }
+    }
+    if (pooled_p * n >= 5) { chi2 += (pooled_c - n * pooled_p) * (pooled_c - n * pooled_p) / (n * pooled_p); cells++; }
+    // Against the chi-square law of cells - 1 degrees of freedom: z of its mean and spread.
+    const double df = cells - 1, z = (chi2 - df) / std::sqrt(2 * df);
+    const std::string name = "random: tabulated Poisson (mean " + calx::verification::shortest(lam) + ")";
+    s.check(name + ", chi-square of its frequencies against the probabilities (z)", z, 5);
+    s.check(name + ", z of the mean", (m.mean - lam) / std::sqrt(lam / n), 5);
+  }
+  {
+    const PoissonTable none(0), big(800);
+    Stream r(2026, 16, 0, 0);
+    double sum = 0;
+    for (int i = 0; i < 10000; i++) sum += static_cast<double>(big(r));
+    s.require("random: a tabulated Poisson of mean 0 draws 0, and one above 500 goes to PTRS", none(r) == 0 && big.size() == 0 && std::fabs(sum / 10000 - 800) < 5 * std::sqrt(800.0 / 10000));
   }
   return s.done();
 }
