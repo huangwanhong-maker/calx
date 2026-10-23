@@ -1,0 +1,7 @@
+add_library(calx_differentiation INTERFACE)
+add_library(calx::differentiation ALIAS calx_differentiation)
+target_include_directories(calx_differentiation INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_differentiation INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_differentiation SOURCES tests/check_differentiation.cpp LIBRARIES calx::differentiation)
+endif()

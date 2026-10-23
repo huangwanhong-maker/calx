@@ -13,6 +13,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0002](0002-scope-and-boundaries.md) | Scope and boundaries | Accepted |
 | [0003](0003-retargetable-computation-stack.md) | Retargetable computation stack | Accepted |
 | [0004](0004-first-modules-and-the-build.md) | The first modules and the build | Accepted, provisionally |
+| [0005](0005-forward-differentiation.md) | Forward differentiation by truncated Taylor arithmetic | Accepted, provisionally |
 
 ## 2. Template
 

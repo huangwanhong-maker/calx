@@ -15,6 +15,7 @@ This layer provides general numerical algorithms on floating-point numbers and a
 | [`random`](random/) | Counter-based generators, streams keyed by purpose and entity, sampling of the standard distributions; quasi-random sequences | draft: Philox4x32-10 and the common distributions |
 | `approximation` | Polynomial, Chebyshev, rational and spline approximation; interpolation in one and many dimensions | planned |
 | [`special_functions`](special_functions/) | Error and gamma functions, orthogonal polynomials, Legendre, Bessel, hypergeometric and elliptic functions | draft: erfcx |
+| [`differentiation`](differentiation/) | Derivatives of functions written as code: forward mode by truncated Taylor arithmetic; reverse mode and transformation of the IR (planned) | draft: jets of order 1 and 2 |
 | [`transforms`](transforms/) | Fast Fourier, cosine, wavelet and spherical-harmonic transforms | draft: the FFT of any length |
 | [`signal`](signal/) | Digital filters, windows, convolution, resampling, periodograms | draft: the Hann window, Welch's spectral density |
 | [`quadrature`](quadrature/) | Integration on intervals, on the sphere, in many dimensions | draft: adaptive Gauss–Kronrod |
@@ -41,4 +42,4 @@ Check every licence before adopting a library.
 
 ## 4. Open Question
 
-Automatic differentiation is an open decision ([CLAUDE.md §8](../CLAUDE.md)).
+Automatic differentiation as a transformation of the IR is an open decision ([CLAUDE.md §8](../CLAUDE.md)); forward differentiation of functions written in C++ is in `differentiation` (decision 0005).

@@ -43,7 +43,7 @@ calx depends on no other library of the project.
 
 ## 5. Status
 
-**Draft (2026-10-23).** The first modules are written in C++20 and checked, as the neuroscience domain's spiking networks need them ([decision 0004](development/decisions/0004-first-modules-and-the-build.md)): `random`, `linalg` (dense, the exponential, compressed rows), `integrators`, `special_functions` (erfcx), `transforms` (the FFT of any length), `signal` (Welch's spectral density), `quadrature`, `solvers` (Brent), `verification`, and `compute/scheduler` (a pool of host threads). The rest of the stack and of the numerics is designed and planned.
+**Draft (2026-10-23).** The first modules are written in C++20 and checked, as the neuroscience domain's spiking networks need them ([decision 0004](development/decisions/0004-first-modules-and-the-build.md)): `random`, `linalg` (dense, the exponential, compressed rows), `integrators`, `special_functions` (erfcx), `differentiation` (jets of order 1 and 2, [decision 0005](development/decisions/0005-forward-differentiation.md)), `transforms` (the FFT of any length), `signal` (Welch's spectral density), `quadrature`, `solvers` (Brent), `verification`, and `compute/scheduler` (a pool of host threads). The rest of the stack and of the numerics is designed and planned.
 
 Build and check with CMake 3.20 or later:
 

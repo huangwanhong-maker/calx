@@ -147,7 +147,7 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 
 ## 8. Open Decisions
 
-1. **Automatic differentiation.** Its natural home is a transformation on the IR, as Enzyme does on LLVM IR. Decide when to build it.
+1. **Automatic differentiation.** Its natural home is a transformation on the IR, as Enzyme does on LLVM IR. Decide when to build it. Forward differentiation by operator overloading (jets of order 1 and 2) is written for functions in C++ (decision 0005).
 2. **Relation to MLIR.** Is the low-level IR an MLIR dialect, or does it lower to one?
 3. **Native CPU path.** Should it emit C++, LLVM IR or something else?
 4. **Typed annotations in the IR.** A generic mechanism through which physis can attach units and frames to IR types ([idea of the infrastructure](https://github.com/huangwanhong-maker/The-Science-Infrastructures/blob/main/development/ideas/2026-10-21-units-and-frames-as-types.md)).
@@ -157,4 +157,4 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 
 ## 9. Current State
 
-As of 2026-10-23, the first modules are written and checked (decision 0004): `numerics/random`, `linalg`, `integrators`, `special_functions`, `transforms`, `signal`, `quadrature`, `solvers`, `verification`, and `compute/scheduler`; 9 check programs, 72 checks. The rest of the stack is designed and planned. The repository is published at `https://github.com/huangwanhong-maker/calx`.
+As of 2026-10-23, the first modules are written and checked (decision 0004): `numerics/random`, `linalg`, `integrators`, `special_functions`, `differentiation` (decision 0005), `transforms`, `signal`, `quadrature`, `solvers`, `verification`, and `compute/scheduler`; 10 check programs, 94 checks. The rest of the stack is designed and planned. The repository is published at `https://github.com/huangwanhong-maker/calx`.

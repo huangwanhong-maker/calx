@@ -13,4 +13,4 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
-| [2026-10-23](2026-10-23.md) | Faster Poisson draws; Fourier transforms and spectra; the compiler's first targets; the first modules and the build |
+| [2026-10-23](2026-10-23.md) | Derivatives to rounding; faster Poisson draws; Fourier transforms and spectra; the compiler's first targets; the first modules and the build |
