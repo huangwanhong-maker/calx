@@ -1,0 +1,7 @@
+add_library(calx_quadrature INTERFACE)
+add_library(calx::quadrature ALIAS calx_quadrature)
+target_include_directories(calx_quadrature INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_quadrature INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_quadrature SOURCES tests/check_quadrature.cpp LIBRARIES calx::quadrature)
+endif()

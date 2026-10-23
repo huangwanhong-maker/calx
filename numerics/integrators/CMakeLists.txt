@@ -1,0 +1,7 @@
+add_library(calx_integrators INTERFACE)
+add_library(calx::integrators ALIAS calx_integrators)
+target_include_directories(calx_integrators INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_integrators INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_integrators SOURCES tests/check_integrators.cpp LIBRARIES calx::integrators calx::linalg)
+endif()

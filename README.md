@@ -7,7 +7,7 @@
 calx lets a numerical computation be written once and run on the CPU today, and on other devices later, including devices that do not yet exist. It provides two things:
 
 - **a computation stack.** It keeps six things separate: representation, schedule, compiler, runtime, task scheduler and device backends. The design follows TVM, Halide and MLIR.
-- **general numerical methods**, built on that stack. These cover floating-point number systems, linear algebra, transforms, quadrature, integrators and solvers.
+- **general numerical methods**, built on that stack. These cover floating-point number systems, linear algebra, random numbers, approximation, special functions, transforms, signal processing, quadrature, integrators, solvers, optimisation, and the verification of results.
 
 calx knows nothing about any scientific domain. It is one of the foundation libraries of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures), but it stands on its own.
 
@@ -28,7 +28,7 @@ calx knows nothing about any scientific domain. It is one of the foundation libr
 | Path | Contents |
 |---|---|
 | [`compute/`](compute/) | The retargetable stack: `ir`, `schedule`, `compiler`, `runtime`, `scheduler`, `backends` |
-| [`numerics/`](numerics/) | Number systems, linear algebra, approximation, special functions, transforms, quadrature, integrators, solvers |
+| [`numerics/`](numerics/) | Number systems, linear algebra, random numbers, approximation, special functions, transforms, signal processing, quadrature, integrators, solvers, optimisation, verification |
 | [`docs/`](docs/) | Architecture |
 | [`development/`](development/) | Decisions and ideas |
 
@@ -43,7 +43,15 @@ calx depends on no other library of the project.
 
 ## 5. Status
 
-**Planned (2026-10-21).** Only the design documents exist so far; there is no code yet.
+**Draft (2026-10-23).** The first modules are written in C++20 and checked, as the neuroscience domain's spiking networks need them ([decision 0004](development/decisions/0004-first-modules-and-the-build.md)): `random`, `linalg` (dense, the exponential, compressed rows), `integrators`, `special_functions` (erfcx), `quadrature`, `solvers` (Brent), `verification`, and `compute/scheduler` (a pool of host threads). The rest of the stack and of the numerics is designed and planned.
+
+Build and check with CMake 3.20 or later:
+
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
 
 ## 6. License
 

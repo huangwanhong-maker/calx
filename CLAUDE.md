@@ -56,10 +56,10 @@ calx shares its governing principle with its sibling repositories: **modular, ex
 ```
 calx/
 ├── compute/       ir · schedule · compiler · runtime · scheduler · backends/cpu
-├── numerics/      number systems · linear algebra · approximation · special functions ·
-│                  transforms · quadrature · integrators · solvers
+├── numerics/      number systems · linear algebra · random · approximation · special functions ·
+│                  transforms · signal · quadrature · integrators · solvers · optimisation · verification
 ├── docs/          architecture
-└── development/   decisions · ideas
+└── development/   decisions · ideas · release notes
 ```
 
 - A subdirectory is created when its first content is written. Until then it appears as a `planned` row in its parent's README.
@@ -88,22 +88,26 @@ Each module has:
 - Its status is `seed`, `promoted` or `abandoned`.
 - Abandoned ideas are kept, with one sentence saying why.
 
-### 5.4 Change Discipline
+### 5.4 Release Notes
+
+At each commit, add to `development/release-notes/YYYY-MM-DD.md` (one file per day, one short section per commit) a concise summary in plain prose of what is new, what one can now do and what works better, not a list of changes (the git log keeps those); not between commits. This convention is shared with the sibling repositories.
+
+### 5.5 Change Discipline
 
 - Before restructuring, or changing an invariant (§2), propose the change and wait for the user's agreement.
 - Keep each change to one concept.
 
-### 5.5 Shared Conventions
+### 5.6 Shared Conventions
 
 calx, morphe, physis and the infrastructure keep these conventions identical:
 
 - the writing style;
 - the status vocabulary;
-- the decision-log and idea conventions.
+- the decision-log, idea and release-note conventions.
 
 When one of them changes, change it in every repository of [The Science Infrastructures](https://github.com/huangwanhong-maker/The-Science-Infrastructures) together: the foundation libraries and the infrastructure's repository.
 
-### 5.6 Work Inside the Infrastructure
+### 5.7 Work Inside the Infrastructure
 
 When calx is edited inside the infrastructure's `foundations/calx`:
 
@@ -128,9 +132,10 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 ## 7. Technology
 
 - **Language: C++.** This was decided in ADR 0003 of The Science Infrastructures and adopted in decision 0002 here.
-- **Provisional choices:**
-  - C++20;
-  - CMake;
+- **Provisional choices** (the build is in use since decision 0004):
+  - C++20, header-only targets `calx::<module>` while the modules are templates;
+  - CMake 3.20 or later; checks are programs on `calx::verification`, registered with CTest;
+  - GCC 11 or later (in WSL on the development machine), Clang 14 or later;
   - a C ABI at the runtime boundary;
   - DLPack for exchanging arrays;
   - nanobind for Python bindings.
@@ -138,7 +143,7 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 - **Development machine:**
   - Windows 11, Intel i7-11370H, 32 GB;
   - NVIDIA RTX 3050 Ti Laptop GPU (4 GB, CUDA 12.9) and Intel Iris Xe;
-  - no C++ compiler or CMake on the Windows side yet.
+  - no C++ compiler or CMake on the Windows side; GCC 11 and CMake 3.28 in WSL.
 
 ## 8. Open Decisions
 
@@ -152,4 +157,4 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 
 ## 9. Current State
 
-As of 2026-10-22, only the design documents exist; there is no code. The repository is published at `https://github.com/huangwanhong-maker/calx`.
+As of 2026-10-23, the first modules are written and checked (decision 0004): `numerics/random`, `linalg`, `integrators`, `special_functions`, `quadrature`, `solvers`, `verification`, and `compute/scheduler`; 7 check programs, 61 checks. The rest of the stack is designed and planned. The repository is published at `https://github.com/huangwanhong-maker/calx`.

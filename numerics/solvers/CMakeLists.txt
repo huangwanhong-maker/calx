@@ -1,0 +1,7 @@
+add_library(calx_solvers INTERFACE)
+add_library(calx::solvers ALIAS calx_solvers)
+target_include_directories(calx_solvers INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_solvers INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_solvers SOURCES tests/check_solvers.cpp LIBRARIES calx::solvers)
+endif()

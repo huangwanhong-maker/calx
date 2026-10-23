@@ -1,0 +1,7 @@
+add_library(calx_random INTERFACE)
+add_library(calx::random ALIAS calx_random)
+target_include_directories(calx_random INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_random INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_random SOURCES tests/check_random.cpp LIBRARIES calx::random)
+endif()

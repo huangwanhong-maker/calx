@@ -94,7 +94,7 @@ Not every computation passes through the stack.
 
 ## 8. Interfaces Offered to Dependent Libraries
 
-- **C++ API.** Public headers live under `include/calx/`.
+- **C++ API.** Public headers live under `include/calx/<module>/`, in the namespace `calx::<module>`, with the CMake target `calx::<module>` (decision 0004).
 - **Runtime boundary.** The runtime exposes a C ABI, and arrays cross it as DLPack. NumPy, PyTorch and JAX also understand DLPack.
 - **IR text format.** A stable artefact that other tools can produce or consume.
 - **Python bindings.** Planned.
@@ -104,6 +104,7 @@ Not every computation passes through the stack.
 ```
 <module>/
 ├── README.md               purpose, status, dependencies, references, open questions
+├── CMakeLists.txt          the target calx::<module>, and its checks
 ├── include/calx/<module>/  public headers
 ├── src/                    implementation
 ├── tests/                  unit tests

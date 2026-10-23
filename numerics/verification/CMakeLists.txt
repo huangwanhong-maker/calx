@@ -1,0 +1,15 @@
+add_library(calx_verification INTERFACE)
+add_library(calx::verification ALIAS calx_verification)
+target_include_directories(calx_verification INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_verification INTERFACE cxx_std_20)
+
+# calx_add_check(<name> SOURCES <files> LIBRARIES <targets>): a check program, run by CTest.
+function(calx_add_check name)
+  cmake_parse_arguments(ARG "" "" "SOURCES;LIBRARIES" ${ARGN})
+  add_executable(${name} ${ARG_SOURCES})
+  target_link_libraries(${name} PRIVATE calx::verification ${ARG_LIBRARIES})
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${name} PRIVATE -Wall -Wextra)
+  endif()
+  add_test(NAME ${name} COMMAND ${name})
+endfunction()
