@@ -157,4 +157,4 @@ When calx is edited inside the infrastructure's `foundations/calx`:
 
 ## 9. Current State
 
-As of 2026-10-23, the first modules are written and checked (decision 0004): `numerics/random`, `linalg`, `integrators`, `special_functions`, `quadrature`, `solvers`, `verification`, and `compute/scheduler`; 7 check programs, 61 checks. The rest of the stack is designed and planned. The repository is published at `https://github.com/huangwanhong-maker/calx`.
+As of 2026-10-23, the first modules are written and checked (decision 0004): `numerics/random`, `linalg`, `integrators`, `special_functions`, `transforms`, `signal`, `quadrature`, `solvers`, `verification`, and `compute/scheduler`; 9 check programs, 72 checks. The rest of the stack is designed and planned. The repository is published at `https://github.com/huangwanhong-maker/calx`.

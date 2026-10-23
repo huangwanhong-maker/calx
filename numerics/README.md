@@ -15,8 +15,8 @@ This layer provides general numerical algorithms on floating-point numbers and a
 | [`random`](random/) | Counter-based generators, streams keyed by purpose and entity, sampling of the standard distributions; quasi-random sequences | draft: Philox4x32-10 and the common distributions |
 | `approximation` | Polynomial, Chebyshev, rational and spline approximation; interpolation in one and many dimensions | planned |
 | [`special_functions`](special_functions/) | Error and gamma functions, orthogonal polynomials, Legendre, Bessel, hypergeometric and elliptic functions | draft: erfcx |
-| `transforms` | Fast Fourier, cosine, wavelet and spherical-harmonic transforms | planned |
-| `signal` | Digital filters, windows, convolution, resampling, periodograms | planned |
+| [`transforms`](transforms/) | Fast Fourier, cosine, wavelet and spherical-harmonic transforms | draft: the FFT of any length |
+| [`signal`](signal/) | Digital filters, windows, convolution, resampling, periodograms | draft: the Hann window, Welch's spectral density |
 | [`quadrature`](quadrature/) | Integration on intervals, on the sphere, in many dimensions | draft: adaptive Gauss–Kronrod |
 | [`integrators`](integrators/) | Ordinary differential equations: explicit, adaptive, implicit and IMEX; differential-algebraic, delay and stochastic equations | draft: Euler, Heun, RK4, Dormand–Prince 5(4) |
 | [`solvers`](solvers/) | Roots, nonlinear systems, fixed points, continuation | draft: Brent |

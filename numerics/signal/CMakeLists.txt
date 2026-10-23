@@ -1,0 +1,8 @@
+add_library(calx_signal INTERFACE)
+add_library(calx::signal ALIAS calx_signal)
+target_include_directories(calx_signal INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_signal INTERFACE cxx_std_20)
+target_link_libraries(calx_signal INTERFACE calx::transforms)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_signal SOURCES tests/check_signal.cpp LIBRARIES calx::signal calx::random)
+endif()

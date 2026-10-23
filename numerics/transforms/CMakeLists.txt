@@ -1,0 +1,7 @@
+add_library(calx_transforms INTERFACE)
+add_library(calx::transforms ALIAS calx_transforms)
+target_include_directories(calx_transforms INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_transforms INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_transforms SOURCES tests/check_transforms.cpp LIBRARIES calx::transforms calx::random)
+endif()
