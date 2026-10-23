@@ -15,3 +15,4 @@ This is the cheapest place to write a thought down. An idea here may be wrong, a
 | Date | Idea | Status |
 |---|---|---|
 | 2026-10-21 | [Equality saturation in the compiler](2026-10-21-equality-saturation-in-the-compiler.md) | seed |
+| 2026-10-23 | [Spiking networks and quantum trajectories as targets of the compiler](2026-10-23-spiking-and-quantum-targets.md) | seed |
