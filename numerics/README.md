@@ -11,17 +11,17 @@ This layer provides general numerical algorithms on floating-point numbers and a
 | Module | Scope | Status |
 |---|---|---|
 | `number_systems` | IEEE formats, double-double, interval arithmetic, compensated summation | planned |
-| [`linalg`](linalg/) | Numerical linear algebra: dense (BLAS kernels, factorisations, eigenproblems, least squares), sparse (compressed rows and columns, iterative solvers, preconditioners), functions of matrices, structured systems | draft: small dense matrices, LU solve, the exponential, compressed sparse rows |
-| [`random`](random/) | Counter-based generators, streams keyed by purpose and entity, sampling of the standard distributions; quasi-random sequences | draft: Philox4x32-10 and the common distributions |
+| [`linalg`](linalg/) | Numerical linear algebra: dense (BLAS kernels, factorisations, eigenproblems, least squares), sparse (compressed rows and columns, iterative solvers, preconditioners), functions of matrices, structured systems | draft: small dense matrices, LU, solves and determinants, the exponential, compressed sparse rows, the symmetric eigenproblem |
+| [`random`](random/) | Counter-based generators, streams keyed by purpose and entity, sampling of the standard distributions; quasi-random sequences | draft: Philox4x32-10 and the common distributions, gamma, beta and binomial among them |
 | `approximation` | Polynomial, Chebyshev, rational and spline approximation; interpolation in one and many dimensions | planned |
-| [`special_functions`](special_functions/) | Error and gamma functions, orthogonal polynomials, Legendre, Bessel, hypergeometric and elliptic functions | draft: erfcx |
+| [`special_functions`](special_functions/) | Error and gamma functions, orthogonal polynomials, Legendre, Bessel, hypergeometric and elliptic functions | draft: erfcx; log Γ, ψ, ψ′, the incomplete gamma and beta functions and their tails |
 | [`differentiation`](differentiation/) | Derivatives of functions written as code: forward mode by truncated Taylor arithmetic; reverse mode and transformation of the IR (planned) | draft: jets of order 1 and 2 |
 | [`transforms`](transforms/) | Fast Fourier, cosine, wavelet and spherical-harmonic transforms | draft: the FFT of any length |
 | [`signal`](signal/) | Digital filters, windows, convolution, resampling, periodograms | draft: the Hann window, Welch's spectral density |
 | [`quadrature`](quadrature/) | Integration on intervals, on the sphere, in many dimensions | draft: adaptive Gauss–Kronrod |
 | [`integrators`](integrators/) | Ordinary differential equations: explicit, adaptive, implicit and IMEX; differential-algebraic, delay and stochastic equations | draft: Euler, Heun, RK4, Dormand–Prince 5(4) |
 | [`solvers`](solvers/) | Roots, nonlinear systems, fixed points, continuation | draft: Brent |
-| `optimisation` | Unconstrained, constrained, linear, quadratic and conic programming; stochastic and derivative-free methods; least squares | planned |
+| [`optimisation`](optimisation/) | Unconstrained, constrained, linear, quadratic and conic programming; stochastic and derivative-free methods; least squares | draft: Brent's minimiser in one variable |
 | [`verification`](verification/) | Checks against references within declared limits; convergence orders; the report of every C++ check | draft |
 
 Some related methods live in sibling libraries:

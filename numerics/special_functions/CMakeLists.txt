@@ -4,4 +4,5 @@ target_include_directories(calx_special_functions INTERFACE ${CMAKE_CURRENT_SOUR
 target_compile_features(calx_special_functions INTERFACE cxx_std_20)
 if(CALX_CHECKS)
   calx_add_check(check_calx_special_functions SOURCES tests/check_special_functions.cpp LIBRARIES calx::special_functions)
+  calx_add_check(check_calx_gamma SOURCES tests/check_gamma.cpp LIBRARIES calx::special_functions)
 endif()

@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 using calx::random::Philox4x32;
@@ -164,5 +165,46 @@ int main() {
     for (int i = 0; i < 10000; i++) sum += static_cast<double>(big(r));
     s.require("random: a tabulated Poisson of mean 0 draws 0, and one above 500 goes to PTRS", none(r) == 0 && big.size() == 0 && std::fabs(sum / 10000 - 800) < 5 * std::sqrt(800.0 / 10000));
   }
+  // ---- gamma, beta and binomial: moments as z-scores, and binomial frequencies by chi-square ----------
+  {
+    Stream r(77, 0x67616d6d, 0, 0);
+    const double N = 1e6;
+    for (double k : {0.3, 1.0, 2.5, 40.0}) {
+      Moments m;
+      for (int i = 0; i < N; i++) m.add(r.gamma(k));
+      s.check("random: gamma (shape " + calx::verification::shortest(k) + "), z of the mean (k)", (m.mean - k) / std::sqrt(k / N), 5);
+      // Var of the sample variance: (μ4 − σ⁴)/N with μ4 = 3k² + 6k for the gamma law.
+      s.check("random: gamma (shape " + calx::verification::shortest(k) + "), z of the variance (k)", (m.variance() - k) / std::sqrt((3 * k * k + 6 * k - k * k) / N), 5);
+    }
+    Moments bm;
+    for (int i = 0; i < N; i++) bm.add(r.beta(2, 5));
+    s.check("random: beta (2, 5), z of the mean (2/7)", (bm.mean - 2.0 / 7) / std::sqrt((10.0 / (49 * 8)) / N), 5);
+    for (auto [n, p] : {std::pair<std::int64_t, double>{20, 0.3}, {1000, 0.004}, {1000, 0.4}, {100000, 0.73}, {7, 0.9}}) {
+      Moments m;
+      std::vector<double> count(static_cast<std::size_t>(n) + 1, 0);
+      const int draws = 400000;
+      for (int i = 0; i < draws; i++) {
+        const auto x = r.binomial(n, p);
+        m.add(static_cast<double>(x));
+        if (x >= 0 && x <= n) count[static_cast<std::size_t>(x)]++;
+      }
+      const double mean = n * p, var = n * p * (1 - p);
+      const std::string name = "random: binomial (" + std::to_string(n) + ", " + calx::verification::shortest(p) + ")";
+      s.check(name + ", z of the mean", (m.mean - mean) / std::sqrt(var / draws), 5);
+      // Pearson's chi-square over cells expecting at least 5, against its law (z of mean and spread).
+      double chi2 = 0, pooled_obs = 0, pooled_exp = 0;
+      int cells = 0;
+      for (std::int64_t k = 0; k <= n; k++) {
+        const double logp = Stream::log_factorial(n) - Stream::log_factorial(k) - Stream::log_factorial(n - k) + k * std::log(p) + (n - k) * std::log1p(-p);
+        const double e = draws * std::exp(logp);
+        if (e >= 5) { chi2 += (count[static_cast<std::size_t>(k)] - e) * (count[static_cast<std::size_t>(k)] - e) / e; cells++; }
+        else { pooled_obs += count[static_cast<std::size_t>(k)]; pooled_exp += e; }
+      }
+      if (pooled_exp >= 5) { chi2 += (pooled_obs - pooled_exp) * (pooled_obs - pooled_exp) / pooled_exp; cells++; }
+      const double dof = cells - 1;
+      s.check(name + ", chi-square of its frequencies against the probabilities (z)", (chi2 - dof) / std::sqrt(2 * dof), 5);
+    }
+  }
+
   return s.done();
 }

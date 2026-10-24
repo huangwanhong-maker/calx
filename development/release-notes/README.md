@@ -13,4 +13,5 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
+| [2026-10-24](2026-10-24.md) | Vector lanes, task graphs and what the genome asks of calx |
 | [2026-10-23](2026-10-23.md) | Derivatives to rounding; faster Poisson draws; Fourier transforms and spectra; the compiler's first targets; the first modules and the build |

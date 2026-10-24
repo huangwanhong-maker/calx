@@ -1,0 +1,7 @@
+add_library(calx_optimisation INTERFACE)
+add_library(calx::optimisation ALIAS calx_optimisation)
+target_include_directories(calx_optimisation INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(calx_optimisation INTERFACE cxx_std_20)
+if(CALX_CHECKS)
+  calx_add_check(check_calx_optimisation SOURCES tests/check_optimisation.cpp LIBRARIES calx::optimisation)
+endif()

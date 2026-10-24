@@ -4,4 +4,5 @@ target_include_directories(calx_linalg INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/inc
 target_compile_features(calx_linalg INTERFACE cxx_std_20)
 if(CALX_CHECKS)
   calx_add_check(check_calx_linalg SOURCES tests/check_linalg.cpp LIBRARIES calx::linalg calx::random)
+  calx_add_check(check_calx_eigen SOURCES tests/check_eigen.cpp LIBRARIES calx::linalg calx::random)
 endif()

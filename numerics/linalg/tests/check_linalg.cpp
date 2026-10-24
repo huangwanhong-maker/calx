@@ -1,7 +1,8 @@
 // Checks of calx/linalg: the solve of a dense system by its residual; the exponential
 // against closed forms (diagonal, nilpotent, a rotation with damping at small and large
 // norm, so that scaling and squaring is exercised) and against exp(A) exp(-A) = I; and
-// compressed sparse rows against the dense product.
+// compressed sparse rows against the dense product; determinants against triangular matrices,
+// permutations, multiplicativity, Vandermonde's product and the Hilbert matrix.
 
 #include <calx/linalg/dense.hpp>
 #include <calx/linalg/expm.hpp>
@@ -99,6 +100,48 @@ int main() {
       err = std::max(err, std::fabs(d - y[i]));
     }
     s.check("linalg: the product by compressed rows equals the dense product", err, 1e-12);
+  }
+  {
+    // Determinants: a triangular matrix's is the product of its diagonal; a permutation's is its
+    // sign; det(AB) = det A det B; Vandermonde's product; the Hilbert matrix of order 6,
+    // 1 / 186313420339200000 (det Hₙ = cₙ⁴ / c₂ₙ, cₙ = ∏_{i<n} i!); a singular matrix.
+    calx::linalg::Matrix T(4);
+    double diag = 1;
+    for (std::size_t i = 0; i < 4; i++)
+      for (std::size_t j = i; j < 4; j++) T(i, j) = (i == j) ? (diag *= -1.5 - static_cast<double>(i), -1.5 - static_cast<double>(i)) : 0.3 * static_cast<double>(i + j);
+    s.check("linalg: a triangular matrix's determinant is its diagonal's product", calx::linalg::determinant(T) - diag, 1e-12);
+    calx::linalg::Matrix P(3);
+    P(0, 1) = P(1, 2) = P(2, 0) = 1;  // a 3-cycle: even
+    calx::linalg::Matrix Q(3);
+    Q(0, 1) = Q(1, 0) = Q(2, 2) = 1;  // a transposition: odd
+    s.require("linalg: a permutation matrix's determinant is its sign", calx::linalg::determinant(P) == 1 && calx::linalg::determinant(Q) == -1);
+    calx::random::Stream r(20261024, 0x64657420, 0, 0);
+    double worst = 0;
+    for (int rep = 0; rep < 50; rep++) {
+      calx::linalg::Matrix A(5), B(5);
+      for (auto& v : A.a) v = r.uniform() * 2 - 1;
+      for (auto& v : B.a) v = r.uniform() * 2 - 1;
+      const double da = calx::linalg::determinant(A), db = calx::linalg::determinant(B), dab = calx::linalg::determinant(A * B);
+      worst = std::max(worst, std::fabs(dab - da * db) / std::max(1e-300, std::fabs(da * db)));
+    }
+    s.check("linalg: det(AB) = det A det B on 50 random pairs of order 5 (relative)", worst, 1e-11);
+    const double xs[5] = {0.5, -1.25, 2, 3.5, -0.75};
+    calx::linalg::Matrix V(5);
+    double vandermonde = 1;
+    for (std::size_t i = 0; i < 5; i++) {
+      for (std::size_t j = 0; j < 5; j++) V(i, j) = std::pow(xs[i], static_cast<double>(j));
+      for (std::size_t j = i + 1; j < 5; j++) vandermonde *= xs[j] - xs[i];
+    }
+    s.check("linalg: Vandermonde's determinant is ∏_{i<j} (x_j − x_i)", calx::linalg::determinant(V) / vandermonde - 1, 1e-12);
+    calx::linalg::Matrix H(6);
+    for (std::size_t i = 0; i < 6; i++)
+      for (std::size_t j = 0; j < 6; j++) H(i, j) = 1.0 / static_cast<double>(i + j + 1);
+    const auto lh = calx::linalg::log_determinant(H);
+    s.check("linalg: the Hilbert matrix of order 6, through its logarithm (ill-conditioned, κ ≈ 1.5e7)", lh.log_abs + std::log(186313420339200000.0), 1e-8);
+    s.require("linalg: and positive", lh.sign == 1);
+    calx::linalg::Matrix S(3);
+    S(0, 0) = 1; S(0, 1) = 2; S(0, 2) = 3; S(1, 0) = 2; S(1, 1) = 4; S(1, 2) = 6; S(2, 0) = 1; S(2, 1) = 0; S(2, 2) = 1;
+    s.require("linalg: a singular matrix's determinant is 0, its log −∞ with sign 0", calx::linalg::determinant(S) == 0 && calx::linalg::log_determinant(S).sign == 0);
   }
   return s.done();
 }

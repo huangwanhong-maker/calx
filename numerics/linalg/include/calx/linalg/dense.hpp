@@ -7,6 +7,9 @@
 //
 // solve() is Gaussian elimination with partial pivoting (Golub and Van Loan 2013,
 // Matrix Computations, 4th ed., Algorithm 3.4.1), backward stable in practice; O(n^3).
+// determinant() is the product of the pivots of the same elimination, with the sign of its row
+// exchanges (Golub and Van Loan 2013, §3.4); log_determinant() its logarithm, which neither
+// overflows nor underflows where the product would.
 
 #pragma once
 
@@ -96,6 +99,64 @@ inline Matrix solve(Matrix A, Matrix B) {
       X(r, j) = s / A(r, r);
     }
   return X;
+}
+
+// The LU factors of A with partial pivoting, in place: U on and above the diagonal, the
+// multipliers of L below it; the sign of the row permutation. A zero pivot leaves the rest unfactored.
+struct Lu {
+  Matrix lu;
+  int sign = 1;
+  bool singular = false;
+};
+inline Lu lu(Matrix A) {
+  const std::size_t n = A.n;
+  Lu f;
+  for (std::size_t c = 0; c < n; c++) {
+    std::size_t p = c;
+    for (std::size_t r = c + 1; r < n; r++)
+      if (std::fabs(A(r, c)) > std::fabs(A(p, c))) p = r;
+    if (A(p, c) == 0) {
+      f.singular = true;
+      break;
+    }
+    if (p != c) {
+      for (std::size_t j = 0; j < n; j++) std::swap(A(c, j), A(p, j));
+      f.sign = -f.sign;
+    }
+    for (std::size_t r = c + 1; r < n; r++) {
+      const double m = A(r, c) / A(c, c);
+      A(r, c) = m;
+      if (m == 0) continue;
+      for (std::size_t j = c + 1; j < n; j++) A(r, j) -= m * A(c, j);
+    }
+  }
+  f.lu = std::move(A);
+  return f;
+}
+
+inline double determinant(const Matrix& A) {
+  const Lu f = lu(A);
+  if (f.singular) return 0;
+  double d = f.sign;
+  for (std::size_t i = 0; i < A.n; i++) d *= f.lu(i, i);
+  return d;
+}
+
+// log |det A| and the sign of det A (0 when singular, with log −∞).
+struct LogDeterminant {
+  double log_abs = 0;
+  int sign = 1;
+};
+inline LogDeterminant log_determinant(const Matrix& A) {
+  const Lu f = lu(A);
+  if (f.singular) return {-HUGE_VAL, 0};
+  LogDeterminant r{0, f.sign};
+  for (std::size_t i = 0; i < A.n; i++) {
+    const double u = f.lu(i, i);
+    r.log_abs += std::log(std::fabs(u));
+    if (u < 0) r.sign = -r.sign;
+  }
+  return r;
 }
 
 }  // namespace calx::linalg

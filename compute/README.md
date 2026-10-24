@@ -14,8 +14,8 @@ The stack lets a computation, written once, run on the CPU today and on other de
 | [`schedule/`](schedule/) | How one computation is mapped onto hardware | planned |
 | [`compiler/`](compiler/) | Passes and lowering | planned |
 | [`runtime/`](runtime/) | Device API, memory, queues, modules | planned |
-| [`scheduler/`](scheduler/) | When and where task graphs run | planned |
-| [`backends/`](backends/) | One plug-in per target | planned |
+| [`scheduler/`](scheduler/) | When and where task graphs run | draft: a thread pool, task graphs by rank, dynamic loops |
+| [`backends/`](backends/) | One plug-in per target | draft: the CPU's target description and lanes |
 
 ## 3. Invariants
 

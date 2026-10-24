@@ -16,7 +16,7 @@ A backend registers as a plug-in and is tested against the CPU reference interpr
 
 | Backend | Target | Status |
 |---|---|---|
-| [`cpu/`](cpu/) | Reference interpreter and native CPU code | planned (first) |
+| [`cpu/`](cpu/) | Reference interpreter and native CPU code | draft: the target description and vector lanes (decision 0006); the interpreter and code generator planned |
 | `cuda` | NVIDIA GPUs (development machine: RTX 3050 Ti) | planned |
 | `sycl` | Intel GPUs via Level Zero (development machine: Iris Xe), and other SYCL devices | planned |
 | `opencl` | Portable accelerators | planned |

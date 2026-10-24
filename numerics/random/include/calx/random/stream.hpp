@@ -18,7 +18,16 @@
 //   Hörmann's transformed rejection with squeeze (PTRS; Hörmann 1993, "The transformed
 //   rejection method for generating Poisson random variables", Insurance: Mathematics and
 //   Economics 12, 39-45) above it, as NumPy's random_poisson_ptrs does.
-// Others (binomial, gamma, ...) are added when a caller needs them.
+// - gamma(k): Marsaglia and Tsang's squeeze on a cubed normal for shape k ≥ 1, and Γ(k + 1)
+//   times U^{1/k} below it (Marsaglia and Tsang 2000, "A simple method for generating gamma
+//   variables", ACM TOMS 26, 363–372, §3 and §6); beta(a, b) as X/(X + Y) of two gammas;
+// - binomial(n, p): by inversion of the distribution function when n·min(p, 1 − p) < 10
+//   (Kachitvichyanukul and Schmeiser 1988, "Binomial random variate generation", CACM 31,
+//   216–222, BINV), and by Hörmann's transformed rejection with squeeze above it (BTRS;
+//   Hörmann 1993, "The generation of binomial random variates", J. Statist. Comput. Simul.
+//   46, 101–110), with log k! by Stirling's series (thread-safe, unlike the C library's lgamma,
+//   which writes the global signgam).
+// Others are added when a caller needs them.
 
 #pragma once
 
@@ -78,6 +87,63 @@ class Stream {
   double lognormal(double mu, double sigma) { return std::exp(normal(mu, sigma)); }
   double exponential() { return -std::log(uniform()); }
   bool bernoulli(double p) { return uniform() < p; }
+  // Gamma with shape k > 0 and scale 1.
+  double gamma(double k) {
+    if (!(k > 0)) return 0;
+    if (k < 1) return gamma(k + 1) * std::pow(uniform(), 1 / k);
+    const double d = k - 1.0 / 3, c = 1 / std::sqrt(9 * d);
+    for (;;) {
+      double x, v;
+      do {
+        x = normal();
+        v = 1 + c * x;
+      } while (v <= 0);
+      v = v * v * v;
+      const double u = uniform(), x2 = x * x;
+      if (u < 1 - 0.0331 * x2 * x2) return d * v;
+      if (std::log(u) < 0.5 * x2 + d * (1 - v + std::log(v))) return d * v;
+    }
+  }
+  double gamma(double k, double scale) { return scale * gamma(k); }
+  double beta(double a, double b) {
+    const double x = gamma(a), y = gamma(b);
+    return x / (x + y);
+  }
+  // Binomial with n trials of probability p.
+  std::int64_t binomial(std::int64_t n, double p) {
+    if (n <= 0 || !(p > 0)) return 0;
+    if (p >= 1) return n;
+    if (p > 0.5) return n - binomial(n, 1 - p);
+    const double q = 1 - p;
+    if (static_cast<double>(n) * p < 10) {
+      // Inversion: walk the distribution function from 0.
+      const double s = p / q, a = (static_cast<double>(n) + 1) * s;
+      for (;;) {
+        double r = std::pow(q, static_cast<double>(n)), u = uniform();
+        std::int64_t x = 0;
+        while (u > r) {
+          u -= r;
+          x++;
+          if (x > n) break;
+          r *= a / static_cast<double>(x) - s;
+        }
+        if (x <= n) return x;
+      }
+    }
+    const double nd = static_cast<double>(n), spq = std::sqrt(nd * p * q);
+    const double b = 1.15 + 2.53 * spq, a = -0.0873 + 0.0248 * b + 0.01 * p, c = nd * p + 0.5;
+    const double vr = 0.92 - 4.2 / b, alpha = (2.83 + 5.1 / b) * spq, lpq = std::log(p / q);
+    const auto m = static_cast<std::int64_t>(std::floor((nd + 1) * p));
+    const double h = log_factorial(m) + log_factorial(n - m);
+    for (;;) {
+      const double U = uniform() - 0.5, V = uniform();
+      const double us = 0.5 - std::fabs(U);
+      const auto k = static_cast<std::int64_t>(std::floor((2 * a / us + b) * U + c));
+      if (k < 0 || k > n) continue;
+      if (us >= 0.07 && V <= vr) return k;
+      if (std::log(V * alpha / (a / (us * us) + b)) <= h - log_factorial(k) - log_factorial(n - k) + static_cast<double>(k - m) * lpq) return k;
+    }
+  }
 
   std::uint64_t geometric(double p) {
     if (p >= 1) return 0;
@@ -107,6 +173,17 @@ class Stream {
       if (k < 0 || (us < 0.013 && V > us)) continue;
       if (std::log(V) + std::log(invalpha) - std::log(a / (us * us) + b) <= -lam + k * loglam - std::lgamma(k + 1.0)) return k;
     }
+  }
+
+  // log k!, exactly summed below 32 and by Stirling's series above (error below 1e-13).
+  static double log_factorial(std::int64_t k) {
+    if (k < 32) {
+      double s = 0;
+      for (std::int64_t i = 2; i <= k; i++) s += std::log(static_cast<double>(i));
+      return s;
+    }
+    const double x = static_cast<double>(k), x2 = x * x;
+    return x * std::log(x) - x + 0.5 * std::log(2 * std::numbers::pi * x) + (1.0 / 12 - (1.0 / 360 - 1.0 / (1260 * x2)) / x2) / x;
   }
 
  private:
