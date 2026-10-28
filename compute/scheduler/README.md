@@ -30,6 +30,15 @@ Checked by `tests/check_task_graph.cpp`: the ranks and critical path of a diamon
 
 *Caveat.* The analyses are of the model and hold for the costs declared. User code on a general-purpose operating system cannot be preempted by the library and can be delayed by the kernel; `dispatch` measures lateness, it does not guarantee it. A guarantee needs a real-time kernel beneath (Linux's `SCHED_DEADLINE`, which is EDF with constant bandwidth servers in the kernel; or `PREEMPT_RT` with fixed priorities).
 
+`include/calx/scheduler/kernel.hpp` asks the kernel what it grants ([decision 0010](../../development/decisions/0010-kernel-awareness-and-extended-range-legendre.md)):
+
+- **`probe_kernel()`** gives a `KernelReport`: the system and its release, WSL, PREEMPT_RT, whether SCHED_FIFO and SCHED_DEADLINE would be granted, SCHED_FIFO's priorities, RLIMIT_RTPRIO, and why a class is refused. Each class is tried on a short-lived thread and given back, so the caller is unchanged.
+- **`raise_to_fifo(priority)`**, **`lower_to_time_sharing()`** and **`current_class()`** act on the calling thread; a pool raises its workers through its own `run`.
+
+Off Linux it says that calx offers no real-time class there.
+
+Checked by `tests/check_kernel.cpp`: the probe leaves the caller unchanged; a raise succeeds exactly when the probe says it would, and lowering works; every refusal is explained. On WSL 2 both classes are refused (no CAP_SYS_NICE, RLIMIT_RTPRIO 0).
+
 Checked by `tests/check_realtime.cpp`: the Liu–Layland bound and its limit; response-time analysis against the simulated schedule of 400 random sets (the first job's response equals Rᵢ, no job's exceeds it, the first rejected task misses); EDF's tests against the simulation (U ≤ 1 meets every implicit deadline and U > 1 misses; the demand criterion agrees on 400 constrained-deadline sets; EDF schedules every set rate-monotonic priorities do); the CBS's rules worked by hand and its isolation beside a stream demanding eight times its share; aging ending a starvation at the step it should; non-preemptive runs in one slice; global EDF on two processors work-conserving; elastic compression; dispatch's order, its once-only runs, its groups and its lateness.
 
 ## 3. Planned Content

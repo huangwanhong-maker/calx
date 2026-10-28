@@ -1,6 +1,7 @@
 // Associated Legendre functions in Schmidt's semi-normalisation, of sin φ for a latitude φ, with
 // their derivatives in φ: the functions of the spherical-harmonic expansions of potential fields
-// (geomagnetism's WMM and IGRF; with a factor √(2n + 1), geodesy's fully normalised functions).
+// (geomagnetism's WMM and IGRF, the crustal fields of the Moon and Mars; with a factor √(2n + 1),
+// geodesy's fully normalised functions).
 //
 // For a latitude φ (radians; the colatitude θ = π/2 − φ, so that sin φ = cos θ and d/dθ = −d/dφ)
 // write μ = sin φ and ν = cos φ. The functions are
@@ -8,10 +9,10 @@
 // with Pₙ,ₘ = ν^m dᵐPₙ/dμᵐ the associated Legendre functions without the Condon–Shortley phase
 // (Pₙ,ₘ = (−1)ᵐ Pₙᵐ of Abramowitz and Stegun 1972, §8.6; the convention of geomagnetism, as the
 // WMM2025 report has it, Chulliat et al. 2025, §1.2, eq. 5). Their mean square over the sphere
-// with cos mλ is 1/(2n + 1) for every m: the coefficients of one degree are on one scale.
+// with cos mλ is 1/(2n + 1) for every m, and by the addition theorem Σₘ P̆ₙᵐ(μ)² = 1 at every μ:
+// the coefficients of one degree are on one scale, and no function exceeds 1 in magnitude.
 //
-// They are computed by recurrences on P̆ themselves, which need no factorials and stay within a
-// few units of rounding to the degrees of the geomagnetic and gravity models:
+// They are computed by recurrences on P̆ themselves, which need no factorials:
 //   P̆₀⁰ = 1,  P̆₁¹ = ν,  P̆ₘᵐ = √((2m − 1)/(2m)) ν P̆ₘ₋₁ᵐ⁻¹ (m ≥ 2),
 //   P̆ₙᵐ = [(2n − 1) μ P̆ₙ₋₁ᵐ − √((n − 1)² − m²) P̆ₙ₋₂ᵐ] / √(n² − m²)   (n > m),
 // the second the three-term recurrence in the degree (Abramowitz and Stegun 1972, 8.5.3) rescaled by
@@ -21,10 +22,15 @@
 // field needs and which stays finite at the poles: its limit there is √(n(n + 1)/2) for m = 1
 // (times (−1)ⁿ⁺¹ at the south pole) and 0 for m > 1.
 //
-// Caveat. The sectoral recurrence multiplies by ν at each order, so P̆ₘᵐ underflows near the poles
-// for orders of several hundred; the extended-range arithmetic of Holmes and Featherstone (2002)
-// is needed beyond degree some 1800 everywhere and is not written. The checks hold the functions
-// to degree 13.
+// Extended range. The sectoral seed P̆ₘᵐ carries νᵐ, which underflows the doubles near the poles for
+// orders of a few hundred (ν = 0.2 and m = 449 give 10⁻³¹⁴), though the functions of high degree it
+// seeds are not negligible there. Each order's column is therefore computed in scaled arithmetic, the
+// X-numbers of Fukushima (2012): its values are held as doubles times 2^e with one integer exponent
+// e for the column, renormalised when they grow, and multiplied out by 2^e only at the end, where a
+// value below the smallest double is truly negligible beside the others of its degree (whose squares
+// sum to 1). The functions then hold at every degree and latitude to the rounding of the recurrence,
+// which grows as n²ε at most (some 10⁻¹⁰ at degree 2700); the checks hold them to degree 2700, at the
+// equator and within 2 × 10⁻⁶ rad of the poles.
 
 #pragma once
 
@@ -59,28 +65,55 @@ inline SchmidtLegendre schmidt_legendre(int degree, double latitude_rad) {
   s.p_over_cos.assign(size, 0.0);
   const double mu = std::sin(latitude_rad), nu = std::cos(latitude_rad);
   auto at = [](int n, int m) { return SchmidtLegendre::index(n, m); };
-  s.p[0] = 1;
+
+  // The sectoral functions, scaled: (sp, sd, sq) · 2^se are P̆ₘᵐ, dP̆ₘᵐ/dφ and P̆ₘᵐ/ν, with sp kept in
+  // [1/2, 1) by moving powers of two into se.
+  double sp = 1, sd = 0, sq = 0;
+  long se = 0;
+  constexpr int big = 480;  // renormalise a column once its values pass 2^480
+  const double up = std::ldexp(1.0, big), down = std::ldexp(1.0, -big);
   for (int m = 0; m <= degree; m++) {
     if (m >= 1) {
-      // The sectoral function from the one below it.
       const double k = m == 1 ? 1.0 : std::sqrt((2.0 * m - 1) / (2.0 * m));
-      const std::size_t below = at(m - 1, m - 1), here = at(m, m);
-      s.p[here] = k * nu * s.p[below];
-      s.dp[here] = k * (nu * s.dp[below] - mu * s.p[below]);
-      s.p_over_cos[here] = m == 1 ? 1.0 : k * nu * s.p_over_cos[below];
+      const double p0 = sp, d0 = sd;
+      sp = k * nu * p0;
+      sd = k * (nu * d0 - mu * p0);
+      sq = m == 1 ? 1.0 : k * nu * sq;  // P̆₁¹/ν = 1; the scale is still 2⁰ at m = 1
+      if (sp != 0) {
+        int e = 0;
+        std::frexp(sp, &e);
+        sp = std::ldexp(sp, -e);
+        sd = std::ldexp(sd, -e);
+        sq = std::ldexp(sq, -e);
+        se += e;
+      }
     }
-    // Up the degrees at this order.
+    // The column of order m, on its own scale e: y = P̆/2^e.
+    long e = se;
+    double y1 = sp, d1 = sd, q1 = sq;      // degree m
+    double y2 = 0, d2 = 0, q2 = 0;         // degree m − 1 (absent)
+    auto store = [&](int n, double y, double d, double q) {
+      const std::size_t k = at(n, m);
+      const int ei = e < -100000 ? -100000 : e > 100000 ? 100000 : int(e);
+      s.p[k] = std::ldexp(y, ei);
+      s.dp[k] = std::ldexp(d, ei);
+      if (m >= 1) s.p_over_cos[k] = std::ldexp(q, ei);
+    };
+    store(m, y1, d1, q1);
     for (int n = m + 1; n <= degree; n++) {
       const double root = std::sqrt(double(n) * n - double(m) * m);
       const double c1 = (2.0 * n - 1) / root;
       const double c2 = std::sqrt(double(n - 1) * (n - 1) - double(m) * m) / root;  // 0 when n = m + 1
-      const std::size_t here = at(n, m), one = at(n - 1, m);
-      const double p2 = n - 2 >= m ? s.p[at(n - 2, m)] : 0.0;
-      const double dp2 = n - 2 >= m ? s.dp[at(n - 2, m)] : 0.0;
-      const double q2 = n - 2 >= m ? s.p_over_cos[at(n - 2, m)] : 0.0;
-      s.p[here] = c1 * mu * s.p[one] - c2 * p2;
-      s.dp[here] = c1 * (nu * s.p[one] + mu * s.dp[one]) - c2 * dp2;
-      if (m >= 1) s.p_over_cos[here] = c1 * mu * s.p_over_cos[one] - c2 * q2;
+      const double y = c1 * mu * y1 - c2 * y2;
+      const double d = c1 * (nu * y1 + mu * d1) - c2 * d2;
+      const double q = m >= 1 ? c1 * mu * q1 - c2 * q2 : 0.0;
+      y2 = y1, d2 = d1, q2 = q1;
+      y1 = y, d1 = d, q1 = q;
+      if (std::fabs(y1) > up || std::fabs(d1) > up || std::fabs(q1) > up) {
+        y1 *= down, d1 *= down, q1 *= down, y2 *= down, d2 *= down, q2 *= down;
+        e += big;
+      }
+      store(n, y1, d1, q1);
     }
   }
   return s;

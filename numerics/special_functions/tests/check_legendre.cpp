@@ -102,6 +102,40 @@ int main() {
     s.check("Schmidt functions: P̆ₙᵐ/cos φ times cos φ is P̆ₙᵐ", ratio, 1e-14);
     s.check("Schmidt functions: P̆ₙᵐ/cos φ at the poles, √(n(n + 1)/2) for m = 1 and 0 beyond", limits, 1e-12);
   }
+  // High degrees, where the sectoral seeds underflow without extended range. The addition theorem,
+  // Σₘ P̆ₙᵐ(μ)² = Pₙ(1) = 1 (Abramowitz and Stegun 1972, 8.794 for Schmidt's normalisation), holds at
+  // every latitude only if no column is lost to underflow.
+  // Rounding in a three-term recurrence grows as n²ε at most, so the departure is measured in that
+  // unit, degree by degree.
+  {
+    double worst = 0, worst_raw = 0;
+    for (const int n : {449, 1000, 2700})
+      for (const double lat : {0.0, 0.5, 1.2, 1.5, pi / 2 - 1e-4, -(pi / 2 - 2e-6)}) {
+        const SchmidtLegendre sf = schmidt_legendre(n, lat);
+        double sum = 0;
+        for (int m = 0; m <= n; m++) sum += sf(n, m) * sf(n, m);
+        worst_raw = std::max(worst_raw, std::fabs(sum - 1));
+        worst = std::max(worst, std::fabs(sum - 1) / (double(n) * n * 2.220446049250313e-16));
+      }
+    s.check("Schmidt functions: Σₘ P̆ₙᵐ² = 1 at degrees 449, 1000 and 2700, to within 2×10⁻⁶ rad of a pole, in units of n²ε", worst, 1.0);
+    s.check("Schmidt functions: and in all, below 10⁻⁹", worst_raw, 1e-9);
+  }
+  {
+    // Near a pole, the columns seeded below the smallest double still give the derivative its value.
+    double identity = 0, fd = 0;
+    for (const double lat : {1.53, -1.5605}) {
+      const SchmidtLegendre sf = schmidt_legendre(450, lat), up = schmidt_legendre(449, lat + 1e-7), down = schmidt_legendre(449, lat - 1e-7);
+      for (int n = 400; n <= 449; n++)
+        for (int m = 0; m <= n; m++) {
+          const std::size_t k = SchmidtLegendre::index(n, m);
+          const double r = (n + 1) * std::tan(lat) * sf.p[k] - std::sqrt((n + 1.0) * (n + 1) - double(m) * m) / std::cos(lat) * sf(n + 1, m);
+          identity = std::max(identity, std::fabs(sf.dp[k] - r) / (n + 1.0));
+          fd = std::max(fd, std::fabs(sf.dp[k] - (up.p[k] - down.p[k]) / 2e-7) / (n + 1.0));
+        }
+    }
+    s.check("Schmidt functions: at degree 449 near the poles, dP̆/dφ against the identity in the degree (per degree)", identity, 1e-9);
+    s.check("Schmidt functions: and against central differences (per degree)", fd, 1e-5);
+  }
   s.require("Schmidt functions: a negative degree is refused", [] {
     try { schmidt_legendre(-1, 0.0); } catch (const std::invalid_argument&) { return true; }
     return false;
