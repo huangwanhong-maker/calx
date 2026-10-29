@@ -16,6 +16,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0005](0005-forward-differentiation.md) | Forward differentiation by truncated Taylor arithmetic | Accepted, provisionally |
 | [0006](0006-lanes-task-graphs-and-the-genome.md) | Lanes, task graphs, and what the genome asks of calx | Accepted |
 | [0007](0007-conjugate-gradients.md) | Conjugate gradients on compressed sparse rows | Accepted |
+| [0008](0008-optimisation-and-least-squares.md) | Optimisation in several variables, linear programming, and the matrices of statistics | Accepted |
 | [0009](0009-real-time-scheduling.md) | Real-time scheduling: tasks with deadlines, their analyses, servers, simulation and dispatch | Accepted, provisionally |
 | [0010](0010-kernel-awareness-and-extended-range-legendre.md) | The kernel's real-time classes, asked; Legendre functions in extended range | Accepted, provisionally |
 
