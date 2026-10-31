@@ -13,6 +13,7 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
+| [2026-10-31](2026-10-31.md) | Multitaper spectra and bispectra, and a faster QR |
 | [2026-10-30](2026-10-30.md) | Contributors, their terms, and a steward |
 | [2026-10-29](2026-10-29.md) | The matrices and minima of statistics; the θ-method; symplectic integrators and small systems; the kernel's real-time classes, asked; Legendre functions in extended range |
 | [2026-10-28](2026-10-28.md) | Real-time scheduling; Schmidt's associated Legendre functions |

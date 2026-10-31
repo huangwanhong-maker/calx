@@ -4,7 +4,8 @@
 // problem, and the residual's orthogonality to the columns; Läuchli's matrix, on which the
 // normal equations are singular in floating point and QR is not; a consistent square system
 // against Gaussian elimination; the numerical rank of a matrix with a dependent column;
-// (AᵀA)⁻¹ against the inverse of the Gram matrix; products and transposes of Rectangular.
+// (AᵀA)⁻¹ against the inverse of the Gram matrix; products and transposes of Rectangular; the reflections
+// applied row by row give the factors of the column-by-column loop to the bit.
 
 #include <calx/linalg/qr.hpp>
 #include <calx/linalg/rectangular.hpp>
@@ -24,6 +25,18 @@ Rectangular random_matrix(std::size_t m, std::size_t n, std::uint32_t id) {
   Rectangular A(m, n);
   for (double& v : A.a) v = rng.normal();
   return A;
+}
+
+// The update of Golub and Van Loan's Algorithm 5.1.1 column by column, as qr() applied it before it
+// went row by row: H_k applied to the remaining columns of a factorisation's working matrix.
+void apply_by_columns(Rectangular& A, std::size_t k, double beta) {
+  for (std::size_t j = k + 1; j < A.cols; j++) {
+    double w = A(k, j);
+    for (std::size_t i = k + 1; i < A.rows; i++) w += A(i, k) * A(i, j);
+    w *= beta;
+    A(k, j) -= w;
+    for (std::size_t i = k + 1; i < A.rows; i++) A(i, j) -= w * A(i, k);
+  }
 }
 
 double max_abs(const std::vector<double>& v) {
@@ -158,6 +171,24 @@ int main() {
     double diff = 0;
     for (std::size_t i = 0; i < 25; i++) diff = std::max(diff, std::fabs(C.a[i] - Gi.a[i]));
     s.check("qr: (AᵀA)⁻¹ = R⁻¹R⁻ᵀ in the original order, against the inverse of the Gram matrix", diff, 1e-13);
+  }
+
+  // ---- the update row by row is the update column by column, to the bit ----
+  {
+    // Without pivoting, the factorisation's first step on A leaves column 0 as v_0 below R_00 and applies
+    // H_0 to the rest; repeat that step by hand with the column-by-column update and compare every entry.
+    const Rectangular A = random_matrix(301, 37, 9);
+    const Qr f = qr(A, false);
+    Rectangular B = A;
+    bool same = true;
+    for (std::size_t k = 0; k < B.cols && k < B.rows; k++) {
+      // The reflector of step k is f's (column k below the diagonal, β_k); applied to B's remaining columns.
+      for (std::size_t i = k + 1; i < B.rows; i++) B(i, k) = f.factors(i, k);
+      apply_by_columns(B, k, f.beta[k]);
+      B(k, k) = f.factors(k, k);
+      for (std::size_t j = k; j < B.cols; j++) same = same && B(k, j) == f.factors(k, j);
+    }
+    s.require("qr: the reflections applied row by row give R of the column-by-column loop to the bit", same);
   }
 
   // ---- Rectangular ----

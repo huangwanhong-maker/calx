@@ -79,6 +79,7 @@ inline Qr qr(Rectangular A, bool pivoting = true, double tolerance = -1) {
   std::vector<double> vn1(n), vn2(n);  // current and reference norms of the remaining columns
   for (std::size_t j = 0; j < n; j++) vn1[j] = vn2[j] = column_norm(j, 0);
   const double tol3z = std::sqrt(eps);
+  std::vector<double> w;               // vᵀ A over the remaining columns
 
   for (std::size_t k = 0; k < t; k++) {
     if (pivoting) {
@@ -116,15 +117,26 @@ inline Qr qr(Rectangular A, bool pivoting = true, double tolerance = -1) {
       mu *= s;
     }
     f.beta[k] = beta;
-    // Apply H_k to the remaining columns: A ← A − β v (vᵀ A).
-    if (beta != 0)
-      for (std::size_t j = k + 1; j < n; j++) {
-        double w = A(k, j);
-        for (std::size_t i = k + 1; i < m; i++) w += A(i, k) * A(i, j);
-        w *= beta;
-        A(k, j) -= w;
-        for (std::size_t i = k + 1; i < m; i++) A(i, j) -= w * A(i, k);
+    // Apply H_k to the remaining columns: A ← A − β v (vᵀ A). The storage is by rows, so w = vᵀ A is
+    // accumulated row by row for all columns at once; each w_j still sums its terms in the order of i,
+    // so the result is the column-by-column loop's to the bit, without striding through memory.
+    if (beta != 0 && k + 1 < n) {
+      w.assign(A.a.begin() + static_cast<std::ptrdiff_t>(k * n + k + 1), A.a.begin() + static_cast<std::ptrdiff_t>((k + 1) * n));
+      for (std::size_t i = k + 1; i < m; i++) {
+        const double v = A(i, k);
+        const double* row = A.a.data() + i * n + k + 1;
+        for (std::size_t j = 0; j < w.size(); j++) w[j] += v * row[j];
       }
+      for (std::size_t j = 0; j < w.size(); j++) {
+        w[j] *= beta;
+        A(k, k + 1 + j) -= w[j];
+      }
+      for (std::size_t i = k + 1; i < m; i++) {
+        const double v = A(i, k);
+        double* row = A.a.data() + i * n + k + 1;
+        for (std::size_t j = 0; j < w.size(); j++) row[j] -= w[j] * v;
+      }
+    }
     A(k, k) = mu;
     // Downdate the remaining norms (LAPACK xLAQP2).
     if (pivoting)

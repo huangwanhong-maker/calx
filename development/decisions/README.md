@@ -21,6 +21,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0010](0010-kernel-awareness-and-extended-range-legendre.md) | The kernel's real-time classes, asked; Legendre functions in extended range | Accepted, provisionally |
 | [0011](0011-the-theta-method.md) | The θ-method for large linear systems | Accepted, provisionally |
 | [0012](0012-symplectic-integrators-and-small-systems.md) | Symplectic integrators, free and constrained (Störmer–Verlet, RATTLE), and small dense systems | Accepted, provisionally |
+| [0013](0013-multitaper-spectra-and-bispectra.md) | Slepian tapers, multitaper spectra, cross spectra and bispectra | Accepted, provisionally |
 
 ## 2. Template
 

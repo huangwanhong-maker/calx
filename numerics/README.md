@@ -17,7 +17,7 @@ This layer provides general numerical algorithms on floating-point numbers and a
 | [`special_functions`](special_functions/) | Error and gamma functions, orthogonal polynomials, Legendre, Bessel, hypergeometric and elliptic functions | draft: erfcx; log Γ, ψ, ψ′, the incomplete gamma and beta functions and their tails; Schmidt's associated Legendre functions |
 | [`differentiation`](differentiation/) | Derivatives of functions written as code: forward mode by truncated Taylor arithmetic; reverse mode and transformation of the IR (planned) | draft: jets of order 1 and 2 |
 | [`transforms`](transforms/) | Fast Fourier, cosine, wavelet and spherical-harmonic transforms | draft: the FFT of any length |
-| [`signal`](signal/) | Digital filters, windows, convolution, resampling, periodograms | draft: the Hann window, Welch's spectral density |
+| [`signal`](signal/) | Digital filters, windows, convolution, resampling, periodograms | draft: the Hann window, Welch's spectral density; Slepian tapers (DPSS), periodograms, Thomson's multitaper estimate with adaptive weights, cross spectra and coherence, the bispectrum and bicoherence |
 | [`quadrature`](quadrature/) | Integration on intervals, on the sphere, in many dimensions | draft: adaptive Gauss–Kronrod |
 | [`integrators`](integrators/) | Ordinary differential equations: explicit, adaptive, implicit and IMEX; differential-algebraic, delay and stochastic equations | draft: Euler, Heun, RK4, Dormand–Prince 5(4); the θ-method for large linear systems; Störmer–Verlet and RATTLE |
 | [`solvers`](solvers/) | Roots, nonlinear systems, fixed points, continuation | draft: Brent |
