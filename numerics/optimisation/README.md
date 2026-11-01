@@ -1,6 +1,6 @@
 # optimisation: Minima and Linear Programmes
 
-*Status: draft (2026-10-24): minima of a function of one variable on an interval ([decision 0006](../../development/decisions/0006-lanes-task-graphs-and-the-genome.md)); minima of several variables without and with derivatives, and linear programmes ([decision 0008](../../development/decisions/0008-optimisation-and-least-squares.md)).* Trust regions, constrained nonlinear problems (SQP, interior point), quadratic and conic programming, nonlinear least squares (Levenberg–Marquardt) and stochastic methods are planned.
+*Status: draft (2026-10-24): minima of a function of one variable on an interval ([decision 0006](../../development/decisions/0006-lanes-task-graphs-and-the-genome.md)); minima of several variables without and with derivatives, and linear programmes ([decision 0008](../../development/decisions/0008-optimisation-and-least-squares.md)); the assignment problem (2026-11-01, [decision 0014](../../development/decisions/0014-assignment-and-multinomial-variates.md)).* Trust regions, constrained nonlinear problems (SQP, interior point), quadratic and conic programming, nonlinear least squares (Levenberg–Marquardt) and stochastic methods are planned.
 
 ## 1. Concepts
 
@@ -10,6 +10,8 @@ In several variables, the Nelder–Mead method moves a simplex of n + 1 points b
 
 A linear programme minimises a linear function over a polyhedron; an optimum, if there is one, is at a vertex, and the simplex method walks from vertex to vertex (basis to basis) while the objective decreases. Phase I finds a first vertex or proves there is none; Bland's rule (least index entering and leaving) prevents the cycling that degenerate vertices can cause. The duals y, read from the final basis, price the constraints: ∂(optimal value)/∂b, zero on a slack constraint (complementary slackness) and with bᵀy equal to the optimal value (strong duality). The value of a zero-sum game is such a programme, and its two optimal mixed strategies are a primal and dual pair.
 
+The assignment problem, the least-cost matching of n rows to distinct columns, is a linear programme whose vertices are all integral, so it can be solved as one; but its structure allows far better. The Hungarian method keeps dual potentials u, v with every reduced cost c_ij − u_i − v_j ≥ 0 and grows the matching one row at a time along the cheapest alternating path, a shortest-path search over the reduced costs, in O(n²m). When it ends, the matched reduced costs are 0 and the potentials prove the matching optimal.
+
 ## 2. Content
 
 | Header | Content |
@@ -17,6 +19,7 @@ A linear programme minimises a linear function over a polyhedron; an optimum, if
 | `minimise.hpp` | `Minimum{x, f, iterations, evaluations, converged}`; `brent_minimise(f, a, b, tolerance)` (Brent 1973, ch. 5, localmin), `brent_maximise`; `golden_section(f, a, b, tolerance)` |
 | `nelder_mead.hpp` | `nelder_mead(f, x0, NelderMeadOptions{x_tolerance, f_tolerance, max_evaluations, initial_step, adaptive})` → `NelderMeadResult{x, value, iterations, evaluations, converged}`: Lagarias, Reeds, Wright and Wright (1998); Gao and Han's (2012) adaptive coefficients; fminsearch's initial simplex and stopping test |
 | `quasi_newton.hpp` | `bfgs(f, gradient, x0, BfgsOptions{gradient_tolerance, max_iterations, c1, c2, max_step})` and `bfgs(f, x0, options)` (central differences) → `BfgsResult{x, value, gradient_norm, iterations, evaluations, converged, inverse_hessian}`: Nocedal and Wright (2006), Algorithm 6.1 with the strong-Wolfe line search of Algorithms 3.5–3.6; `gradient_by_differences(f, x)`, `hessian_by_differences(f, x)` |
+| `assignment.hpp` | `assignment(cost)` → `Assignment{column, cost, u, v}`: the least-cost injection of rows into columns (n ≤ m) by the Hungarian method in its O(n²m) shortest-augmenting-path form (Kuhn 1955; Munkres 1957; Burkard, Dell'Amico and Martello 2012, ch. 4), with the dual potentials as a certificate of optimality |
 | `linear_programming.hpp` | `simplex(LinearProgram{c, a_ub, b_ub, a_eq, b_eq, lower, upper}, LpOptions)` → `LpResult{status, x, value, duals_ub, duals_eq, iterations}`: two-phase dense simplex with Bland's rule (Dantzig 1963; Bland 1977; Chvátal 1983); `LpStatus{optimal, infeasible, unbounded, iteration_limit}` |
 
 Functions of several variables are called with a `std::span<const double>`; a gradient returns a `std::vector<double>`.
@@ -26,6 +29,7 @@ Functions of several variables are called with a `std::span<const double>`; a gr
 - `check_calx_optimisation`: minima known in closed form (a parabola, cos on [2, 4.5], x eˣ) to the method's guarantee; a parabola in a few evaluations, against golden section's many; a minimum at an end; a quartic, to what its flatness allows; a kink; a binomial log-likelihood's maximum; the refusal of an empty interval.
 - `check_calx_nelder_mead` (14): Rosenbrock's function from (−1.2, 1) with the standard and the adaptive coefficients; a quadratic in three variables; x eˣ against Brent; Powell's singular function in four variables; the budget of evaluations; NaN as +∞; the caller's initial steps.
 - `check_calx_quasi_newton` (17): Rosenbrock with its gradient (superlinear, to 10⁻⁹) and by differences; the extended Rosenbrock function in ten variables; a quadratic's minimiser, with H = A⁻¹ after n exact line searches (Nocedal and Wright §6.1); the normal log-likelihood's maximum and the covariance of (μ̂, σ̂²) from `hessian_by_differences` against σ²/n and 2σ⁴/n; gradients by differences against closed forms.
+- `check_calx_assignment`: the least cost over every injection (brute force, 500 problems up to 6 × 8, real and tied integer costs); the dual certificate (u_i + v_j ≤ c_ij, equality on the assignment, v ≤ 0 off it, strong duality) up to 60 × 80; a hidden permutation recovered; refusals.
 - `check_calx_linear_programming` (40): Chvátal's (1983) first example (13 at (2, 0, 1), duals (1, 0, 1)) and his cycling example (1 at (1, 0, 1, 0)); Hillier and Lieberman's Wyndor Glass problem (36 at (2, 6), shadow prices (0, 3/2, 1)) and radiation therapy (5.25 at (7.5, 4.5), with = and ≥ rows); an infeasible and an unbounded programme; bounds, a free variable and a redundant equality; complementary slackness, dual feasibility, reduced costs and strong duality at every optimum; rock–paper–scissors (value 0, uniform strategies for both players) and a 2 × 2 game (value 1/7 at (3/7, 4/7)).
 
 ## 4. Dependencies
@@ -35,6 +39,10 @@ Functions of several variables are called with a `std::span<const double>`; a gr
 ## 5. References
 
 - Bland, R. G. (1977), New finite pivoting rules for the simplex method, *Math. Oper. Res.* 2, 103–107.
+- Burkard, R., Dell'Amico, M. and Martello, S. (2012), *Assignment Problems*, revised reprint, SIAM.
+- Jonker, R. and Volgenant, A. (1987), A shortest augmenting path algorithm for dense and sparse linear assignment problems, *Computing* 38, 325–340.
+- Kuhn, H. W. (1955), The Hungarian method for the assignment problem, *Naval Res. Logist. Q.* 2, 83–97.
+- Munkres, J. (1957), Algorithms for the assignment and transportation problems, *J. SIAM* 5, 32–38.
 - Brent, R. P. (1973), *Algorithms for Minimization without Derivatives*, Prentice-Hall, ch. 5.
 - Chvátal, V. (1983), *Linear Programming*, Freeman.
 - Dantzig, G. B. (1963), *Linear Programming and Extensions*, Princeton.

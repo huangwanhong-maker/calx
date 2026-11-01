@@ -4,4 +4,5 @@ target_include_directories(calx_random INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/inc
 target_compile_features(calx_random INTERFACE cxx_std_20)
 if(CALX_CHECKS)
   calx_add_check(check_calx_random SOURCES tests/check_random.cpp LIBRARIES calx::random)
+  calx_add_check(check_calx_multinomial SOURCES tests/check_multinomial.cpp LIBRARIES calx::random)
 endif()

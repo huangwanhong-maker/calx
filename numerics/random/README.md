@@ -12,11 +12,12 @@ Simulations draw millions of random numbers in parallel and must give the same r
 |---|---|
 | `philox.hpp` | Philox4x32-10 (Salmon et al. 2011), evaluable at compile time |
 | `poisson.hpp` | `PoissonTable(lam)`: Poisson variates of one mean, many times, by inversion of the distribution function tabulated once: one uniform each (PTRS above a mean of 500) |
+| `multinomial.hpp` | `multinomial(rng, n, p)`: counts of n draws among categories with probabilities proportional to p, by conditional binomials (Davis 1993; [decision 0014](../../development/decisions/0014-assignment-and-multinomial-variates.md)) |
 | `stream.hpp` | `Stream(seed, a, b, c)`: three identity words of the counter and a walking block; uniform on (0, 1) with 53 bits, bounded integers (Lemire 2019), normal (Box–Muller), lognormal, exponential, geometric, Bernoulli, Poisson (multiplication below a mean of 10, PTRS above), gamma (Marsaglia and Tsang 2000), beta (a ratio of gammas), binomial (inversion below n·p = 10, Hörmann's BTRS above; [decision 0006](../../development/decisions/0006-lanes-task-graphs-and-the-genome.md)) |
 
 ## 3. Checks
 
-The known-answer vectors of Random123; the moments of each distribution over a million draws, as z-scores; a chi-square of bounded integers, and of the tabulated Poisson's and the binomial's frequencies against their probabilities; the moments of gamma and beta variates; the independence of identities and seeds; `seek`.
+The known-answer vectors of Random123; the moments of each distribution over a million draws, as z-scores; a chi-square of bounded integers, and of the tabulated Poisson's and the binomial's frequencies against their probabilities; the moments of gamma and beta variates; the independence of identities and seeds; `seek`. `check_calx_multinomial`: totals, an impossible category never drawn, means, variances and a covariance over 20 000 draws, Pearson's χ² of a draw of 10⁶, refusals.
 
 ## 4. Dependencies
 
@@ -31,6 +32,7 @@ None.
 - Hörmann, W. (1993), The generation of binomial random variates, *J. Statist. Comput. Simul.* 46, 101–110.
 - Kachitvichyanukul, V. and Schmeiser, B. W. (1988), Binomial random variate generation, *Communications of the ACM* 31, 216–222.
 - Marsaglia, G. and Tsang, W. W. (2000), A simple method for generating gamma variables, *ACM TOMS* 26, 363–372.
+- Davis, C. S. (1993), The computer generation of multinomial random variates, *Comput. Stat. Data Anal.* 16, 205–217.
 
 ## 6. Open Questions
 
