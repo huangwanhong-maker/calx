@@ -13,6 +13,7 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
+| [2026-11-04](2026-11-04.md) | The symmetric 3 × 3 eigenproblem in closed form |
 | [2026-11-01](2026-11-01.md) | Assignment, and multinomial draws |
 | [2026-10-31](2026-10-31.md) | Multitaper spectra and bispectra, and a faster QR |
 | [2026-10-30](2026-10-30.md) | Contributors, their terms, and a steward |
