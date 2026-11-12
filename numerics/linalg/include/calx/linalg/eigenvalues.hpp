@@ -129,6 +129,9 @@ inline std::vector<std::complex<double>> eigenvalues(Matrix A) {
   double norm = 0;
   for (int i = 0; i < nn; i++)
     for (int j = std::max(i - 1, 0); j < nn; j++) norm += std::fabs(H(i, j));
+  // The zero matrix: every eigenvalue is 0. The test for a negligible subdiagonal (|h| < ε s with s = ‖H‖ = 0) would
+  // never pass, and the iteration would not end (decision 0016).
+  if (norm == 0) return out;
   int iter = 0, total = 0;
   while (n >= low) {
     // A single small subdiagonal element.
