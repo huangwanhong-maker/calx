@@ -25,6 +25,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0014](0014-assignment-and-multinomial-variates.md) | The assignment problem and multinomial variates | Accepted, provisionally |
 | [0015](0015-the-symmetric-three-by-three-eigenproblem.md) | The symmetric 3 × 3 eigenproblem in closed form | Accepted, provisionally |
 | [0016](0016-non-negative-matrices.md) | Non-negative matrices: the Perron root, its sensitivities, and processes that leave their states | Accepted |
+| [0017](0017-the-leading-walks-of-a-neumann-series.md) | The leading walks of a Neumann series: structural path analysis with an exact bound on what each branch holds | Accepted |
 
 ## 2. Template
 

@@ -26,6 +26,7 @@
 //                                             (Kemeny and Snell 1960, Finite Markov Chains, ch. III;
 //                                             Caswell ch. 5). Columns index the state one starts from, as a
 //                                             projection n(t+1) = A n(t) acts on columns.
+//   leading_walks(Z, e, y, cutoff, …)         the largest walks of eᵀ(I − Z)⁻¹y, none above the cut missed (decision 0017; below)
 //   next_generation(U, F)                     R₀ = ρ(F N), the dominant eigenvalue of the next-generation
 //                                             matrix: R₀ > 1 exactly when ρ(U + F) > 1 (Cushing and Zhou
 //                                             1994, Nat. Resour. Model. 8: 297–333; Caswell ch. 5).
@@ -292,6 +293,102 @@ inline double next_generation(const Matrix& U, const Matrix& F) {
   nonnegative_detail::require_nonnegative(F, "next_generation");
   if (F.n != U.n) throw std::invalid_argument("calx::linalg::next_generation: U and F of one order");
   return spectral_radius(F * fundamental(U));
+}
+
+// ---- the leading walks of a Neumann series (decision 0017) ----
+//
+// For Z ≥ 0 with ρ(Z) < 1 and weights e ≥ 0, y ≥ 0, the total eᵀ(I − Z)⁻¹ y = Σ_k eᵀ Z^k y is a sum
+// over walks j₀ → j₁ → … → j_k in the graph of Z's positive entries (an edge j_{l−1} → j_l for each
+// Z(j_l, j_{l−1}) > 0), the walk contributing e_{j_k} Z(j_k, j_{k−1}) ⋯ Z(j₁, j₀) y_{j₀}. A walk is read
+// from the end where y enters (in input–output analysis, the final demand) back to where e is spent
+// (the pressure of the sector reached). Structural path analysis lists the largest walks: Defourny and
+// Thorbecke 1984, Econ. J. 94: 111–136; Lenzen 2002, J. Cleaner Prod. 10: 545–572; Peters and Hertwich
+// 2006, Econ. Syst. Res. 18: 155–181.
+//
+// Method. Depth-first search from each j₀ with y_{j₀} > 0, carrying the walk's weight v = Z(j_k, j_{k−1})
+// ⋯ y_{j₀}. Everything that extends a walk ending at j sums to v m_j with m = eᵀ(I − Z)⁻¹, the total
+// multipliers; so a branch is cut when v m_j < cutoff · total, and no walk of value ≥ cutoff · total is
+// missed (the bound is exact for non-negative data). Walks of value at least cutoff · total are kept,
+// largest first, up to `keep`; the search also stops at `depth` steps or after `budget` walks visited,
+// and says so (`complete` false). When the bound alone ended it, total − covered < cut · cutoff · total,
+// `cut` the number of branches cut. Accuracy: each value is a product of k + 2 numbers, exact to about (k + 2)ε relative;
+// `covered` sums every walk visited of whatever value, so total − covered is what the cut left, never negative.
+struct Walk {
+  std::vector<std::size_t> nodes;  // j₀ (where y enters), j₁, …, j_k (where e is spent)
+  double value = 0;
+};
+struct Walks {
+  std::vector<Walk> walks;          // largest first
+  double total = 0;                 // eᵀ(I − Z)⁻¹ y
+  double covered = 0;               // the sum of the values of every walk visited
+  std::vector<double> by_depth;     // eᵀ Z^k y, k = 0 .. depth, exactly (by the powers, not the search)
+  std::size_t visited = 0;
+  std::size_t cut = 0;              // branches cut by the bound, each holding less than cutoff · total: so
+                                    // total − covered < cut · cutoff · total when the search is complete
+  bool complete = true;             // false when the budget, not the bound, stopped the search
+};
+
+inline Walks leading_walks(const Matrix& Z, const std::vector<double>& e, const std::vector<double>& y, double cutoff = 1e-3,
+                           std::size_t depth = 12, std::size_t keep = 50, std::size_t budget = 2000000) {
+  const std::size_t n = Z.n;
+  nonnegative_detail::require_nonnegative(Z, "leading_walks");
+  if (e.size() != n || y.size() != n) throw std::invalid_argument("calx::linalg::leading_walks: e and y of the order of Z");
+  for (std::size_t j = 0; j < n; j++)
+    if (!(e[j] >= 0) || !(y[j] >= 0)) throw std::invalid_argument("calx::linalg::leading_walks: e ≥ 0 and y ≥ 0, so that the bound on what a branch holds is exact");
+  if (!(cutoff > 0)) throw std::invalid_argument("calx::linalg::leading_walks: cutoff > 0");
+  if (!(spectral_radius(Z) < 1)) throw std::invalid_argument("calx::linalg::leading_walks: ρ(Z) < 1, so that the series converges");
+  const Matrix N = solve(Matrix::identity(n) - Z, Matrix::identity(n));
+  std::vector<double> m(n, 0.0);  // m = eᵀ N
+  for (std::size_t j = 0; j < n; j++)
+    for (std::size_t i = 0; i < n; i++) m[j] += e[i] * N(i, j);
+  Walks W;
+  for (std::size_t j = 0; j < n; j++) W.total += m[j] * y[j];
+  {
+    std::vector<double> u = y;  // Z^k y
+    for (std::size_t k = 0; k <= depth; k++) {
+      double s = 0;
+      for (std::size_t i = 0; i < n; i++) s += e[i] * u[i];
+      W.by_depth.push_back(s);
+      std::vector<double> next(n, 0.0);
+      for (std::size_t i = 0; i < n; i++)
+        for (std::size_t l = 0; l < n; l++) next[i] += Z(i, l) * u[l];
+      u = std::move(next);
+    }
+  }
+  const double floor = cutoff * W.total;
+  std::vector<std::size_t> path;
+  std::vector<Walk> found;
+  auto visit = [&](auto&& self, std::size_t j, double v) -> void {
+    if (W.visited >= budget) {
+      W.complete = false;
+      return;
+    }
+    W.visited++;
+    path.push_back(j);
+    const double own = v * e[j];
+    W.covered += own;
+    if (own >= floor && own > 0) found.push_back({path, own});
+    if (path.size() <= depth)
+      for (std::size_t i = 0; i < n; i++) {
+        const double z = Z(i, j);
+        if (z <= 0) continue;
+        if (v * z * m[i] >= floor) self(self, i, v * z);
+        else W.cut++;
+      }
+    else
+      for (std::size_t i = 0; i < n; i++)  // at the depth: a branch the bound would have kept is left unseen
+        if (Z(i, j) > 0 && v * Z(i, j) * m[i] >= floor) W.complete = false;
+    path.pop_back();
+  };
+  for (std::size_t j = 0; j < n; j++)
+    if (y[j] > 0) {
+      if (y[j] * m[j] >= floor) visit(visit, j, y[j]);
+      else W.cut++;
+    }
+  std::sort(found.begin(), found.end(), [](const Walk& a, const Walk& b) { return a.value > b.value; });
+  if (found.size() > keep) found.resize(keep);
+  W.walks = std::move(found);
+  return W;
 }
 
 }  // namespace calx::linalg

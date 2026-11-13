@@ -234,5 +234,76 @@ int main() {
     s.require("a repeated λ: sensitivities are refused", !P.simple && undefined);
   }
 
+  // ---- the leading walks of a Neumann series (structural path analysis) ----
+  {
+    // An acyclic chain of supply (Z strictly lower triangular): finitely many walks, all of them visited.
+    Matrix Z(4);
+    Z(1, 0) = 0.3; Z(2, 0) = 0.2; Z(2, 1) = 0.5; Z(3, 1) = 0.4; Z(3, 2) = 0.25;
+    const std::vector<double> e{1.0, 2.0, 0.5, 3.0}, y{10.0, 0.0, 0.0, 0.0};
+    const Walks W = leading_walks(Z, e, y, 1e-15, 10);
+    s.check("walks: an acyclic chain is covered exactly, eᵀ(I − Z)⁻¹y = Σ walks", std::fabs(W.covered - W.total) / W.total, 1e-15);
+    // By hand: 10 + 10·0.3·2 + 10·0.2·0.5 + 10·0.3·0.5·0.5 + 10·0.3·0.4·3 + 10·0.2·0.25·3 + 10·0.3·0.5·0.25·3
+    const double by_hand = 10 + 6 + 1 + 0.75 + 3.6 + 1.5 + 1.125;
+    s.check("walks: the total of an acyclic chain by hand, 23.975", std::fabs(W.total - by_hand), 1e-13);
+    s.require("walks: the largest is the demand itself, then the first supplier (10, then 6)",
+              W.walks.size() == 7 && W.walks[0].nodes.size() == 1 && std::fabs(W.walks[0].value - 10) < 1e-15 &&
+                  W.walks[1].nodes == std::vector<std::size_t>{0, 1} && std::fabs(W.walks[1].value - 6) < 1e-14);
+  }
+  {
+    // A random positive Z with ρ = 0.6: eᵀ Z^k y by depth, and no walk above the cut is missed.
+    calx::random::Stream rng(17, 0, 0, 0);
+    const std::size_t n = 6;
+    Matrix Z(n);
+    for (double& v : Z.a) v = rng.uniform();
+    const double scale = 0.6 / spectral_radius(Z);
+    for (double& v : Z.a) v *= scale;
+    std::vector<double> e(n), y(n);
+    for (std::size_t i = 0; i < n; i++) e[i] = rng.uniform(), y[i] = i < 2 ? 1.0 + rng.uniform() : 0.0;
+    const double cutoff = 2e-3;
+    const Walks W = leading_walks(Z, e, y, cutoff, 40, 100000);
+    double worst = 0, sum = 0;
+    std::vector<double> u = y;
+    for (std::size_t k = 0; k < W.by_depth.size(); k++) {
+      double t = 0;
+      for (std::size_t i = 0; i < n; i++) t += e[i] * u[i];
+      worst = std::max(worst, std::fabs(t - W.by_depth[k]));
+      sum += t;
+      std::vector<double> next(n, 0.0);
+      for (std::size_t i = 0; i < n; i++)
+        for (std::size_t l = 0; l < n; l++) next[i] += Z(i, l) * u[l];
+      u = next;
+    }
+    s.check("walks: eᵀ Z^k y by depth", worst, 1e-14);
+    s.check("walks: the series by depth sums to the total (ρ = 0.6, forty terms)", std::fabs(sum - W.total) / W.total, 1e-8);
+    // Brute force to depth 6, with no bound: every walk of value ≥ cutoff · total.
+    std::size_t brute = 0;
+    const double floor = cutoff * W.total;
+    std::vector<std::size_t> path;
+    auto all = [&](auto&& self, std::size_t j, double v) -> void {
+      if (v * e[j] >= floor) brute++;
+      if (path.size() < 6) {
+        path.push_back(j);
+        for (std::size_t i = 0; i < n; i++) self(self, i, v * Z(i, j));
+        path.pop_back();
+      }
+    };
+    for (std::size_t j = 0; j < n; j++)
+      if (y[j] > 0) all(all, j, y[j]);
+    std::size_t found = 0;
+    bool above = true;
+    for (const auto& w : W.walks) {
+      found += w.nodes.size() <= 7;
+      above = above && w.value >= floor;
+    }
+    s.require("walks: the bounded search finds every walk above the cut that brute force finds to depth 6", W.complete && found == brute && brute > 0);
+    s.require("walks: every walk kept is above the cut, largest first", above && std::is_sorted(W.walks.begin(), W.walks.end(), [](const Walk& a, const Walk& b) { return a.value > b.value; }));
+    s.require("walks: what was covered never exceeds the total", W.covered <= W.total * (1 + 1e-14));
+    bool refused = false;
+    try {
+      (void)leading_walks(Z, std::vector<double>(n, -1.0), y);
+    } catch (const std::invalid_argument&) { refused = true; }
+    s.require("walks: negative weights are refused (the bound would not hold)", refused);
+  }
+
   return s.done();
 }
