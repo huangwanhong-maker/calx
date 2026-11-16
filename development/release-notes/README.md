@@ -13,6 +13,7 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
+| [2026-11-16](2026-11-16.md) | The 0/1 knapsack by branch and bound, with a certificate |
 | [2026-11-13](2026-11-13.md) | The leading walks of a Neumann series, with an exact bound on the rest (structural path analysis); non-negative matrices: the Perron root and its vectors, sensitivities and elasticities, the fundamental matrix and R₀; the eigenvalues of the zero matrix returned |
 | [2026-11-04](2026-11-04.md) | Categorical draws, one at a time and many from one law; the symmetric 3 × 3 eigenproblem in closed form |
 | [2026-11-01](2026-11-01.md) | Assignment, and multinomial draws |
