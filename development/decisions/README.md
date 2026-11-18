@@ -27,6 +27,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0016](0016-non-negative-matrices.md) | Non-negative matrices: the Perron root, its sensitivities, and processes that leave their states | Accepted |
 | [0017](0017-the-leading-walks-of-a-neumann-series.md) | The leading walks of a Neumann series: structural path analysis with an exact bound on what each branch holds | Accepted |
 | [0018](0018-the-knapsack.md) | The 0/1 knapsack problem by branch and bound on Dantzig's relaxation, with a certificate when stopped early | Accepted |
+| [0019](0019-greedy-submodular.md) | Greedy maximisation of a monotone submodular function, lazily, under a number or a budget, with a bound on the best computed from the instance | Accepted, provisionally |
 
 ## 2. Template
 

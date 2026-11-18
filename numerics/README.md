@@ -21,7 +21,7 @@ This layer provides general numerical algorithms on floating-point numbers and a
 | [`quadrature`](quadrature/) | Integration on intervals, on the sphere, in many dimensions | draft: adaptive Gauss–Kronrod |
 | [`integrators`](integrators/) | Ordinary differential equations: explicit, adaptive, implicit and IMEX; differential-algebraic, delay and stochastic equations | draft: Euler, Heun, RK4, Dormand–Prince 5(4); the θ-method for large linear systems; Störmer–Verlet and RATTLE |
 | [`solvers`](solvers/) | Roots, nonlinear systems, fixed points, continuation | draft: Brent |
-| [`optimisation`](optimisation/) | Unconstrained, constrained, linear, quadratic and conic programming; stochastic and derivative-free methods; least squares | draft: Brent's minimiser in one variable; Nelder–Mead; BFGS with a strong-Wolfe line search; gradients and Hessians by differences; the simplex method for linear programmes; the assignment problem (the Hungarian method) |
+| [`optimisation`](optimisation/) | Unconstrained, constrained, linear, quadratic and conic programming; stochastic and derivative-free methods; least squares | draft: Brent's minimiser in one variable; Nelder–Mead; BFGS with a strong-Wolfe line search; gradients and Hessians by differences; the simplex method for linear programmes; the assignment problem (the Hungarian method); the 0/1 knapsack by branch and bound; greedy maximisation of submodular functions with a bound on the best |
 | [`verification`](verification/) | Checks against references within declared limits; convergence orders; the report of every C++ check | draft |
 
 Some related methods live in sibling libraries:
