@@ -13,6 +13,7 @@ A running record, for readers, of what each commit made possible or better. It i
 
 | Date | Commits |
 |---|---|
+| [2026-11-21](2026-11-21.md) | General band matrices and their LU factorisation with partial pivoting |
 | [2026-11-18](2026-11-18.md) | Greedy maximisation of submodular functions with a bound on the best |
 | [2026-11-16](2026-11-16.md) | The 0/1 knapsack by branch and bound, with a certificate |
 | [2026-11-13](2026-11-13.md) | The leading walks of a Neumann series, with an exact bound on the rest (structural path analysis); non-negative matrices: the Perron root and its vectors, sensitivities and elasticities, the fundamental matrix and R₀; the eigenvalues of the zero matrix returned |

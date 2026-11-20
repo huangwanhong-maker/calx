@@ -28,6 +28,7 @@ Each record captures one decision that shapes the structure, interfaces or tooli
 | [0017](0017-the-leading-walks-of-a-neumann-series.md) | The leading walks of a Neumann series: structural path analysis with an exact bound on what each branch holds | Accepted |
 | [0018](0018-the-knapsack.md) | The 0/1 knapsack problem by branch and bound on Dantzig's relaxation, with a certificate when stopped early | Accepted |
 | [0019](0019-greedy-submodular.md) | Greedy maximisation of a monotone submodular function, lazily, under a number or a budget, with a bound on the best computed from the instance | Accepted, provisionally |
+| [0020](0020-band-lu.md) | General band matrices and their LU factorisation with partial pivoting, for nonsymmetric banded systems such as generators on a grid of cells | Accepted, provisionally |
 
 ## 2. Template
 
